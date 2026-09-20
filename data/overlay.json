@@ -1,0 +1,62 @@
+{
+  "appointments": {
+    "pat_01M305G0YB3DWRQNHS8ENYDT51": "2026-11-04",
+    "pat_01M305G0S28N4ABS9QRHBNNS0K": null,
+    "pat_01M305G0HTZFRFWGTZHZWB7TDP": "2026-10-11",
+    "pat_01M305G0A9X1JQBVZ55DQ43F27": "2026-10-30",
+    "pat_01M305G03Z2HHHGTTTEHV699HP": "2026-11-19",
+    "pat_01M305FZWWDGAWDB48CJVB0184": null,
+    "pat_01M30371HGBQK7YWBYEZDYPVDG": "2026-11-04",
+    "pat_01M302WHTJSB82EYANJVXVEEDB": "2026-11-04"
+  },
+  "prescriptions": {
+    "rx_01M306B88ZE92ADYXC7C7FWZ80": {
+      "filledAt": "2026-09-14",
+      "renewableWithoutVisit": true,
+      "lastSeen": "2026-08-21"
+    },
+    "rx_01M306B57NEFMXDQPRNGQR178J": {
+      "filledAt": "2026-08-26",
+      "renewableWithoutVisit": true,
+      "refillsLeft": 0,
+      "lastSeen": "2026-05-21"
+    },
+    "rx_01M306B351PE8YB2T3N23HW2ED": {
+      "filledAt": null,
+      "renewableWithoutVisit": false,
+      "coverage": "PA_REQUIRED",
+      "coverageMessage": "Step therapy requirements apply. Documented trial of a topical corticosteroid is required.",
+      "waitingOn": "a prior authorisation decision",
+      "lastSeen": "2026-06-24"
+    },
+    "rx_01M306B0G8KAKDKPQ6WEZ522RF": {
+      "filledAt": "2026-09-11",
+      "renewableWithoutVisit": true,
+      "readySince": "2026-09-11",
+      "lastSeen": "2026-07-19"
+    },
+    "rx_01M306AY0CM6ZF7VHJZ9DGW8ZX": {
+      "filledAt": "2026-09-17",
+      "previousFilledAt": "2026-09-06",
+      "renewableWithoutVisit": false,
+      "lastSeen": "2026-08-04"
+    },
+    "rx_01M306AVMVM5CCSGTFW8QP5201": {
+      "filledAt": "2025-10-21",
+      "renewableWithoutVisit": true,
+      "deviceExpiresAt": "2026-10-21",
+      "lastSeen": "2025-07-21",
+      "refillsLeft": 0
+    },
+    "rx_01M303FA8VH6NX5S45WEFHT7BZ": {
+      "filledAt": "2026-09-14",
+      "renewableWithoutVisit": true,
+      "lastSeen": "2026-08-21"
+    },
+    "rx_01M303P6JW41EG6PJZ9X4HJ9YJ": {
+      "filledAt": "2026-09-14",
+      "renewableWithoutVisit": true,
+      "lastSeen": "2026-08-21"
+    }
+  }
+}
