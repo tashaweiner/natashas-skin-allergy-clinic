@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MessagePreview } from "./MessagePreview.tsx";
 
 /**
  * Who the patient is, on every card.
@@ -17,6 +18,7 @@ export function ContactPanel({
   email,
   dateOfBirth,
   address,
+  draftInput,
 }: {
   label?: string;
   name: string;
@@ -24,26 +26,19 @@ export function ContactPanel({
   email?: string | null;
   dateOfBirth?: string;
   address?: string | null;
+  draftInput?: React.ComponentProps<typeof MessagePreview>["input"];
 }) {
   const [showInfo, setShowInfo] = useState(false);
-  const [stubbed, setStubbed] = useState(false);
 
   return (
     <div className="mt-3 space-y-2">
-      {label && (
-        <button
-          onClick={() => setStubbed(true)}
-          className="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
-        >
-          {label}
-        </button>
-      )}
-
-      {stubbed && (
-        <p className="rounded-md bg-slate-100 px-3 py-2 text-xs text-slate-600">
-          Not built. Outbound texting needs the clinic&apos;s own SMS provider — Photon only
-          messages patients to choose a pharmacy.
-        </p>
+      {label && draftInput && (
+        <MessagePreview
+          label={label}
+          firstName={name.split(" ")[0]}
+          phone={phone}
+          input={draftInput}
+        />
       )}
 
       <button

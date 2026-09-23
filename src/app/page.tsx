@@ -3,6 +3,7 @@ import { recommend, type Recommendation } from "@/lib/recommend.ts";
 import { nearbyPharmacies, type PharmacyOption } from "./actions.ts";
 import { RerouteButton } from "./RerouteButton.tsx";
 import { ContactPanel } from "./ContactPanel.tsx";
+import { SignButton } from "./SignButton.tsx";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,16 @@ function Contact({ f, label }: { f: Flag; label?: string }) {
   return (
     <ContactPanel
       label={label}
+      draftInput={{
+        firstName: f.patientName.split(" ")[0],
+        medication: f.medication,
+        reason: f.reason,
+        kind: f.kind,
+        refillsLeft: f.refillsLeft,
+        nextAppointment: f.nextAppointment,
+        renewableWithoutVisit: f.renewableWithoutVisit,
+        pharmacyName: f.pharmacyName,
+      }}
       name={f.patientName}
       phone={f.phone}
       email={f.email}
@@ -127,7 +138,6 @@ function WaitingCard({ f }: { f: Flag }) {
 async function PhysicianCard({ f }: { f: Flag }) {
   const rec = await recommend(f);
   const v = VERDICT[rec.verdict];
-  const prescribeUrl = `https://app.neutron.health/prescriptions/new?patientId=${f.patientId}`;
 
   return (
     <Card>
@@ -174,14 +184,18 @@ async function PhysicianCard({ f }: { f: Flag }) {
         </div>
       )}
 
-      <a
-        href={prescribeUrl}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-3 block rounded-md bg-slate-900 px-3 py-2 text-center text-sm font-medium text-white hover:bg-slate-700"
-      >
-        Review and sign in Photon
-      </a>
+      <SignButton
+        prescriptionId={f.prescriptionId}
+        patientId={f.patientId}
+        computedRefills={
+          f.proposal?.changes.find((c) => c.field === "Refills" && c.certainty === "computed")
+            ? Number(
+                f.proposal.changes.find((c) => c.field === "Refills" && c.certainty === "computed")!
+                  .to
+              )
+            : undefined
+        }
+      />
       <Contact f={f} />
     </Card>
   );
@@ -191,20 +205,25 @@ function Column({
   title,
   subtitle,
   count,
+  action,
   children,
 }: {
   title: string;
   subtitle: string;
   count: number;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <section className="flex-1">
-      <div className="mb-3">
-        <h2 className="text-sm font-semibold tracking-wide text-slate-900 uppercase">
-          {title} <span className="font-normal text-slate-400">{count}</span>
-        </h2>
-        <p className="text-xs text-slate-500">{subtitle}</p>
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-semibold tracking-wide text-slate-900 uppercase">
+            {title} <span className="font-normal text-slate-400">{count}</span>
+          </h2>
+          <p className="text-xs text-slate-500">{subtitle}</p>
+        </div>
+        {action}
       </div>
       <ul className="space-y-3">{children}</ul>
     </section>
@@ -279,7 +298,11 @@ export default async function Page() {
             ))}
           </Column>
 
-          <Column title="Dr. Reyes" subtitle="Signatures only" count={physician.length}>
+          <Column
+            title="Sent to Dr. Reyes"
+            subtitle="Everything else was handled"
+            count={physician.length}
+          >
             {physician.map((f) => (
               <PhysicianCard key={`${f.prescriptionId}-${f.kind}`} f={f} />
             ))}
