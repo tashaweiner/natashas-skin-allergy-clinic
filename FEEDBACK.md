@@ -96,6 +96,21 @@ would save every psych or pain clinic the same question during evaluation.
 
 ---
 
+## One thing that surprised me
+
+A machine token **can** cancel a prescription but **cannot** create one. `createPrescription`
+refused me with `MISSING_PERMISSIONS: write:prescription`; `cancelPrescription` went straight
+through.
+
+I'd have guessed it the other way round. Cancelling someone's live prescription is a
+clinically consequential act — arguably more so than a create, which at least has a
+prescriber attached. If that's deliberate I'd love to understand the reasoning; if it isn't,
+it's the kind of gap an integration bug could walk into.
+
+(Separately: cancelling a prescription that's already gone to a pharmacy returns `DEPLETED`
+rather than `CANCELED`, which your status guide does explain — but it means "cancel" quietly
+does nothing in the common case.)
+
 ## Smaller things
 
 - `routeOrder` returns the order as it was *before* the change — my UI reported "nothing

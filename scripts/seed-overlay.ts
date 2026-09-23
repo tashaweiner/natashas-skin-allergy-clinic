@@ -2,9 +2,13 @@
  * Builds data/overlay.json from whatever is actually in Photon right now.
  *
  * Photon's sandbox can't produce fill history, appointments, device expiry, a
- * renewal policy, or a visit date, so those are assigned here — matched by drug
- * name, so the demo reads the same no matter what order Photon returns things
- * in, and stays correct if the prescriptions are re-created.
+ * renewal policy, or a visit date, so those are assigned here.
+ *
+ * Scenarios are keyed to the six demo patients by their externalId, not by drug
+ * name. That way the panel can grow, prescriptions can be edited, and other
+ * patients can come and go without the demo changing underneath you — everyone
+ * outside the six is simply read and found fine, which is what most of a real
+ * panel looks like anyway.
  *
  * Run: npm run seed
  */
@@ -13,18 +17,23 @@ import { gql } from "../src/lib/photon.ts";
 import { saveOverlay, addDays, iso, type Overlay, type RxOverlay } from "../src/lib/overlay.ts";
 
 const QUERY = `
-  query { patients { id name { full }
+  query { patients(first: 100) { id externalId name { full }
     prescriptions { id daysSupply treatment { name } fills { id state } } } }
 `;
 
 type Rx = { id: string; daysSupply: number | null; treatment: { name: string } };
-type Patient = { id: string; name: { full: string }; prescriptions: Rx[] };
+type Patient = {
+  id: string;
+  externalId: string | null;
+  name: { full: string };
+  prescriptions: Rx[];
+};
 
 const today = new Date();
 
 type Scenario = {
-  /** Matched case-insensitively against the drug name. */
-  match: RegExp;
+  /** externalId of the demo patient this scenario belongs to. */
+  patient: string;
   label: string;
   appointmentInDays: number | null;
   rx: (daysSupply: number) => RxOverlay;
@@ -32,7 +41,7 @@ type Scenario = {
 
 const SCENARIOS: Scenario[] = [
   {
-    match: /epinephrine|epipen|auvi|symjepi/i,
+    patient: "nas-001",
     label: "device expiring · renewable without a visit → Dr. Reyes",
     appointmentInDays: null,
     rx: () => ({
@@ -44,7 +53,7 @@ const SCENARIOS: Scenario[] = [
     }),
   },
   {
-    match: /clobetasol/i,
+    patient: "nas-005",
     label: "running out · no refills, no visit booked → Dr. Reyes",
     appointmentInDays: null,
     rx: (ds) => ({
@@ -55,7 +64,7 @@ const SCENARIOS: Scenario[] = [
     }),
   },
   {
-    match: /triamcinolone/i,
+    patient: "nas-002",
     label: "supply ran short · refilled far too early → Dr. Reyes",
     appointmentInDays: 60,
     rx: (ds) => ({
@@ -66,7 +75,7 @@ const SCENARIOS: Scenario[] = [
     }),
   },
   {
-    match: /levocetirizine|cetirizine|hydroxyzine|montelukast/i,
+    patient: "nas-003",
     label: "stranded at the pharmacy → Dana",
     appointmentInDays: 40,
     rx: (ds) => ({
@@ -77,7 +86,7 @@ const SCENARIOS: Scenario[] = [
     }),
   },
   {
-    match: /flonase|fluticasone|mometasone/i,
+    patient: "nas-006",
     label: "running out · renewal needs a visit first → Dana books",
     appointmentInDays: null,
     rx: (ds) => ({
@@ -88,7 +97,7 @@ const SCENARIOS: Scenario[] = [
     }),
   },
   {
-    match: /dupixent|dupilumab/i,
+    patient: "nas-004",
     label: "prior auth submitted, awaiting a decision → Waiting",
     appointmentInDays: 21,
     rx: () => ({
@@ -105,7 +114,7 @@ const SCENARIOS: Scenario[] = [
 
 /** Everyone else has plenty of supply and a visit on the books. */
 const HEALTHY: Scenario = {
-  match: /.^/,
+  patient: "",
   label: "healthy · nothing needed",
   appointmentInDays: 45,
   rx: (ds) => ({
@@ -120,7 +129,7 @@ const overlay: Overlay = { appointments: {}, prescriptions: {} };
 
 for (const patient of data.patients) {
   for (const rx of patient.prescriptions ?? []) {
-    const scenario = SCENARIOS.find((s) => s.match.test(rx.treatment.name)) ?? HEALTHY;
+    const scenario = SCENARIOS.find((s) => s.patient === patient.externalId) ?? HEALTHY;
     overlay.prescriptions[rx.id] = scenario.rx(rx.daysSupply ?? 30);
     overlay.appointments[patient.id] =
       scenario.appointmentInDays === null ? null : iso(addDays(today, scenario.appointmentInDays));
