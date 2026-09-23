@@ -107,7 +107,8 @@ export type Flag = {
   sig?: string;
   allergies?: string[];
   medicationHistory?: string[];
-  screenAlerts?: string[];
+  /** Photon's own "no known allergies" vs "never asked" distinction. */
+  allergyStatus?: string | null;
   coverageMessage?: string;
   lastSeen?: string;
   /** Set when the item is parked: "labs", "prior authorisation", "a reply". */
@@ -320,6 +321,7 @@ export async function getFlags(today = new Date()): Promise<Flag[]> {
         nextAppointment,
         sig: rx.instructions,
         allergies: (patient.allergies ?? []).map((a) => a.allergen.name),
+        allergyStatus: patient.allergyStatus,
         medicationHistory: (patient.medicationHistory ?? [])
           .filter((m) => m.active)
           .map(

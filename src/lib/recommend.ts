@@ -32,7 +32,8 @@ physician's signature queue. Summarise whether it looks safe to renew without se
 Rules:
 - You are not deciding anything. You state a position; a physician signs or overrides.
 - Never say a medication should or should not be prescribed on pharmacological grounds.
-  If a drug interaction screen flagged something, report that the screen flagged it.
+  You have NOT been given an interaction screen result. Do not claim anything was or
+  was not flagged. If interactions matter here, say they have not been re-checked.
 - The prescriber's "renewable without a visit" setting is a default from when the
   prescription was written, not an answer. Time and new information can override it.
 - Say plainly when information is missing or stale. "Medication list last confirmed 14
@@ -118,13 +119,18 @@ export async function recommend(flag: Flag): Promise<Recommendation> {
     `Prescriber marked renewable without a visit: ${flag.renewableWithoutVisit ? "yes" : "no"}`,
     `Next scheduled visit: ${flag.nextAppointment ?? "none"}`,
     flag.sig ? `Directions as written: ${flag.sig}` : null,
-    flag.allergies?.length ? `Allergies on file: ${flag.allergies.join(", ")}` : "Allergies on file: none recorded",
+    flag.allergies?.length
+      ? `Allergies on file: ${flag.allergies.join(", ")}`
+      : flag.allergyStatus
+        ? `Allergies on file: none — recorded status is "${flag.allergyStatus}"`
+        : "Allergies on file: none, and no allergy status was ever recorded — absence here means nobody asked, not that there are none",
     flag.medicationHistory?.length
       ? `Other medications on file: ${flag.medicationHistory.join(", ")}`
       : "Other medications on file: none recorded",
-    flag.screenAlerts?.length
-      ? `Photon's interaction screen flagged: ${flag.screenAlerts.join("; ")}`
-      : "Photon's interaction screen flagged nothing",
+    // Photon screens at write time via prescriptionScreen; this tool does not
+    // re-run it, so the model is told that rather than handed a result we never
+    // fetched. Wiring it is BACKLOG item 2.
+    "Interaction screening: NOT re-run for this renewal. The last screen was at the time the original prescription was written.",
     flag.coverageMessage ? `Insurer returned: "${flag.coverageMessage}"` : null,
     flag.lastSeen ? `Last seen: ${flag.lastSeen}` : "Last seen: not recorded",
   ]

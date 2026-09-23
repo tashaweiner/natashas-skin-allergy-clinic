@@ -26,7 +26,7 @@ getting.
 silence block a renewal — it still reaches the physician, labelled *med list not
 confirmed*; and it supplements the record, never replaces it.
 
-## 2. Re-screen over time, not just at write time
+## 2. Actually call `prescriptionScreen`, and re-screen over time
 
 Photon runs drug–drug and drug–allergy screening when a prescription is written. Nothing
 ever runs it again. A patient stable on one medication picks up something new from a
@@ -34,6 +34,11 @@ different prescriber, and the interaction now exists with nobody watching for it
 
 Same shape as everything else here: the check is an event, when it should be a standing
 property.
+
+Today this tool does not call `prescriptionScreen` at all — the recommendation says so
+explicitly rather than implying a clean screen it never ran. Wiring it means drafting the
+renewal against `clinical-api` (the query takes `draftedPrescriptions` + `patientId`), which
+is the right shape but a second domain and a second call per flag.
 
 ## 3. Real inbound replies
 
