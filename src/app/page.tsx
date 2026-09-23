@@ -113,8 +113,8 @@ function WaitingCard({ f }: { f: Flag }) {
     <Card>
       <Head f={f} />
       <p className="mt-3 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">
-        Parked on <span className="font-medium text-slate-800">{f.waitingOn}</span>. Runway is
-        watching and will move this the moment it lands.
+        Parked on <span className="font-medium text-slate-800">{f.waitingOn}</span>. This is
+        watched, and moves the moment it lands.
       </p>
       {f.coverageMessage ? (
         <p className="mt-2 text-xs italic text-slate-500">“{f.coverageMessage}”</p>
@@ -246,7 +246,7 @@ export default async function Page() {
     <main className="mx-auto min-h-screen max-w-6xl bg-slate-50 px-4 py-10 sm:px-6">
       <header className="mb-8">
         <p className="text-sm text-slate-500">Natasha&apos;s Allergy &amp; Skin</p>
-        <h1 className="mt-1 text-2xl font-semibold text-slate-900">Runway</h1>
+        <h1 className="mt-1 text-2xl font-semibold text-slate-900">Dana&apos;s Dashboard</h1>
         <p className="mt-2 text-sm text-slate-600">
           {today} — {flags.length} {flags.length === 1 ? "problem" : "problems"} found.{" "}
           <span className="font-medium text-slate-900">
@@ -288,7 +288,7 @@ export default async function Page() {
       )}
 
       <p className="mt-10 text-xs leading-relaxed text-slate-500">
-        Runway never sends a prescription. Photon grants{" "}
+        Nothing here sends a prescription. Photon grants{" "}
         <code className="font-mono">write:prescription</code> only to authorized providers — a
         machine token is refused — so every signature happens in Photon, by a physician.
       </p>

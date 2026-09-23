@@ -1,4 +1,4 @@
-# Runway
+# Dana's Dashboard
 
 A between-visits assistant for a small allergy and dermatology clinic, built on Photon.
 
@@ -63,8 +63,10 @@ sig, allergies, medication history, the insurer's coverage message, time since l
 — and states one line: approve, see them first, or hold, with the facts it leaned on.
 
 That is the only place a model is used, because it is the only place the input is language
-rather than numbers. It relays Photon's interaction screen; it never makes a
-pharmacological judgment of its own.
+rather than numbers. It never makes a pharmacological judgment of its own — and it is told
+explicitly that interaction screening was **not** re-run for the renewal, rather than being
+handed a clean result nobody fetched. Wiring `prescriptionScreen` is
+[`BACKLOG.md`](BACKLOG.md) item 2.
 
 ---
 
@@ -120,7 +122,7 @@ code counts fills still in `NEW` — see the comment in
 `photon:prescription:expired`, fires a year out and means nothing clinically. Every
 ingredient for the date that matters is in the API and nothing assembles it.
 
-Fourteen more in [`FEEDBACK.md`](FEEDBACK.md), including what Photon gets right.
+Sixteen more in [`FEEDBACK.md`](FEEDBACK.md), including what Photon gets right.
 
 ---
 
