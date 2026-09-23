@@ -85,8 +85,18 @@ Fuller versions of these in [`BACKLOG.md`](BACKLOG.md).
 ## What's simulated
 
 Photon's sandbox never advances a fill — every fill returns `state: NEW` with
-`filledAt: null` — so fill dates, appointments, device expiry, and the renewal policy live in
-`data/overlay.json`. Each one is commented with what Photon would supply instead.
+`filledAt: null` — and it has no concept of an appointment, a device expiry, or whether a
+renewal needs a visit. Without those, none of the five rules can fire.
+
+So `scripts/seed-overlay.ts` invents that history — **for every patient, on the same terms.**
+No patient is singled out and no scenario is assigned. Each value is derived deterministically
+from the prescription's own id, plus real drug attributes: auto-injectors get a one-year
+expiry because that is a property of the device, biologics usually hit prior authorisation
+because they usually do.
+
+Then the rules run, and whoever trips one trips it on the merits. Which patients appear on
+the board is not a decision anyone made — today it happens to be six of nineteen, and two of
+them are patients I never intended to surface.
 
 Everything else is live: patients, prescriptions, fills, allergies, medication history,
 pharmacies, drug search, permissions.

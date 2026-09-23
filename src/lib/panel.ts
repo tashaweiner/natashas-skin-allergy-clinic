@@ -470,7 +470,16 @@ export async function getFlags(today = new Date()): Promise<Panel> {
     }
   }
 
-  const out = flags
+  // A device that is expiring is also, technically, running out. Two cards for
+  // one prescription is noise — the expiry is the more specific fact, so it wins.
+  const expiring = new Set(
+    flags.filter((f) => f.kind === "DEVICE_EXPIRING").map((f) => f.prescriptionId)
+  );
+  const deduped = flags.filter(
+    (f) => !(f.kind === "RUNNING_OUT" && expiring.has(f.prescriptionId))
+  );
+
+  const out = deduped
     .map((f) => {
       const queue = queueFor(f.kind, f.renewableWithoutVisit, f.waitingOn);
       return {

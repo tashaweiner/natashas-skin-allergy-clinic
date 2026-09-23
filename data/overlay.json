@@ -1,32 +1,37 @@
 {
   "appointments": {
-    "pat_01M305G0YB3DWRQNHS8ENYDT51": null,
+    "pat_01M305G0YB3DWRQNHS8ENYDT51": "2027-01-22",
     "pat_01M305G0S28N4ABS9QRHBNNS0K": null,
-    "pat_01M305G0HTZFRFWGTZHZWB7TDP": "2026-10-14",
-    "pat_01M305G0A9X1JQBVZ55DQ43F27": "2026-11-02",
-    "pat_01M305G03Z2HHHGTTTEHV699HP": "2026-11-22",
+    "pat_01M305G0HTZFRFWGTZHZWB7TDP": null,
+    "pat_01M305G0A9X1JQBVZ55DQ43F27": "2027-01-26",
+    "pat_01M305G03Z2HHHGTTTEHV699HP": "2026-10-26",
     "pat_01M305FZWWDGAWDB48CJVB0184": null,
-    "pat_01M30371HGBQK7YWBYEZDYPVDG": "2026-11-07",
-    "pat_01M302WHTJSB82EYANJVXVEEDB": "2026-11-07",
-    "pat_01M302TJ4GFEGPH03B9YRMDGVM": "2026-11-07",
-    "pat_01M302RZ9WY50Y1JKA9TV3NBY2": "2026-11-07",
-    "pat_01M302QKVQJ81H85CK1KRSRP7X": "2026-11-07",
-    "pat_01M302QGKY5Z6XBQ6N9S1AKKZ3": "2026-11-07",
-    "pat_01M302PD47W8VY6RF81GVK9K34": "2026-11-07",
-    "pat_01M300SJQ6DC68KMEGGAKRWCZD": "2026-11-07"
+    "pat_01M305EPWYQN5GE1W13E8WF14X": "2026-10-30",
+    "pat_01M30371HGBQK7YWBYEZDYPVDG": "2026-12-31",
+    "pat_01M302WKPTAYE9EQ41C1PVPG9R": "2027-01-04",
+    "pat_01M302WHTJSB82EYANJVXVEEDB": "2026-12-01",
+    "pat_01M302TJ4GFEGPH03B9YRMDGVM": null,
+    "pat_01M302S12WVTDPNBX898WVG4XZ": null,
+    "pat_01M302RZ9WY50Y1JKA9TV3NBY2": "2026-11-25",
+    "pat_01M302QKVQJ81H85CK1KRSRP7X": "2026-12-21",
+    "pat_01M302QGKY5Z6XBQ6N9S1AKKZ3": null,
+    "pat_01M302PD47W8VY6RF81GVK9K34": "2026-10-30",
+    "pat_01M302N2S17RWYCZ3WET5D2RZV": "2026-10-23",
+    "pat_01M300SJQ6DC68KMEGGAKRWCZD": "2027-01-03",
+    "pat_01M2ZW6225GJJC4Q3MNRW553JD": "2026-12-04"
   },
   "prescriptions": {
     "rx_01M306B88ZE92ADYXC7C7FWZ80": {
-      "filledAt": "2026-09-01",
-      "renewableWithoutVisit": false,
-      "refillsLeft": 0,
-      "lastSeen": "2025-08-21"
+      "filledAt": "2026-08-21",
+      "renewableWithoutVisit": true,
+      "refillsLeft": 5,
+      "lastSeen": "2026-07-29"
     },
     "rx_01M306B57NEFMXDQPRNGQR178J": {
-      "filledAt": "2026-08-29",
-      "renewableWithoutVisit": true,
-      "refillsLeft": 0,
-      "lastSeen": "2026-05-24"
+      "filledAt": "2026-09-22",
+      "renewableWithoutVisit": false,
+      "refillsLeft": 3,
+      "lastSeen": "2026-03-09"
     },
     "rx_01M306B351PE8YB2T3N23HW2ED": {
       "filledAt": null,
@@ -34,66 +39,77 @@
       "coverage": "PA_REQUIRED",
       "coverageMessage": "Step therapy requirements apply. Documented trial of a topical corticosteroid is required.",
       "waitingOn": "a prior authorisation decision",
-      "lastSeen": "2026-06-27"
+      "lastSeen": "2026-06-02"
     },
     "rx_01M306B0G8KAKDKPQ6WEZ522RF": {
-      "filledAt": "2026-09-14",
+      "filledAt": "2026-08-17",
       "renewableWithoutVisit": true,
-      "readySince": "2026-09-14",
-      "lastSeen": "2026-07-22"
+      "refillsLeft": 3,
+      "lastSeen": "2025-12-17"
     },
     "rx_01M306AY0CM6ZF7VHJZ9DGW8ZX": {
-      "filledAt": "2026-09-20",
-      "previousFilledAt": "2026-09-09",
-      "renewableWithoutVisit": false,
-      "lastSeen": "2026-08-07"
+      "filledAt": "2026-08-23",
+      "renewableWithoutVisit": true,
+      "refillsLeft": 0,
+      "previousFilledAt": "2026-08-12",
+      "lastSeen": "2025-08-03"
     },
     "rx_01M306AVMVM5CCSGTFW8QP5201": {
-      "filledAt": "2025-10-24",
+      "filledAt": "2025-09-28",
       "renewableWithoutVisit": true,
-      "deviceExpiresAt": "2026-10-24",
-      "lastSeen": "2025-07-24",
-      "refillsLeft": 0
+      "refillsLeft": 0,
+      "deviceExpiresAt": "2026-09-28",
+      "lastSeen": "2025-10-03"
     },
     "rx_01M303FA8VH6NX5S45WEFHT7BZ": {
-      "filledAt": "2026-09-17",
+      "filledAt": "2026-09-07",
       "renewableWithoutVisit": true,
-      "lastSeen": "2026-08-24"
+      "refillsLeft": 4,
+      "readySince": "2026-09-07",
+      "lastSeen": "2025-12-23"
     },
     "rx_01M303P6JW41EG6PJZ9X4HJ9YJ": {
-      "filledAt": "2026-09-17",
+      "filledAt": "2026-09-04",
       "renewableWithoutVisit": true,
-      "lastSeen": "2026-08-24"
+      "refillsLeft": 3,
+      "lastSeen": "2026-04-12"
     },
     "rx_01M303N1KAKS5H9XFYH8X1FYKW": {
-      "filledAt": "2026-09-17",
+      "filledAt": "2026-09-09",
       "renewableWithoutVisit": true,
-      "lastSeen": "2026-08-24"
+      "refillsLeft": 3,
+      "lastSeen": "2025-09-30"
     },
     "rx_01M303JMZC83GNMF4NRFFFP8KP": {
-      "filledAt": "2026-09-17",
+      "filledAt": "2026-08-15",
       "renewableWithoutVisit": true,
-      "lastSeen": "2026-08-24"
+      "refillsLeft": 1,
+      "lastSeen": "2026-02-05"
     },
     "rx_01M303HP865X1HRQTWHPKHG338": {
-      "filledAt": "2026-09-17",
+      "filledAt": "2026-09-03",
       "renewableWithoutVisit": true,
-      "lastSeen": "2026-08-24"
+      "refillsLeft": 3,
+      "lastSeen": "2026-06-23"
     },
     "rx_01M303HJE0F0RC8W5MTRVVQRH4": {
-      "filledAt": "2026-09-17",
+      "filledAt": "2026-08-29",
       "renewableWithoutVisit": true,
-      "lastSeen": "2026-08-24"
+      "refillsLeft": 3,
+      "lastSeen": "2026-05-12"
     },
     "rx_01M303G8VFD2JNNPP89PZ9J32W": {
-      "filledAt": "2026-09-17",
+      "filledAt": "2026-09-12",
       "renewableWithoutVisit": true,
-      "lastSeen": "2026-08-24"
+      "refillsLeft": 3,
+      "readySince": "2026-09-12",
+      "lastSeen": "2026-04-12"
     },
     "rx_01M301Q3R6FZX2KNWBMB537EBZ": {
-      "filledAt": "2026-09-05",
+      "filledAt": "2026-08-19",
       "renewableWithoutVisit": true,
-      "lastSeen": "2026-08-24"
+      "refillsLeft": 2,
+      "lastSeen": "2026-07-28"
     }
   }
 }
