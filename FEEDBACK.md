@@ -142,23 +142,31 @@ link; it's behind the avatar menu.
 
 ## Controlled substances
 
-### 16. Supported in the schema, absent from the docs
+### 16. The schema implies controlled-substance support that doesn't exist
 
-I searched all 21 documentation pages. Zero mentions of EPCS, DEA, "controlled,"
-"Schedule II," PDMP, or two-factor identity proofing. The word "schedule" does not appear
-in the prose documentation in any context.
+The API exposes `Medication.controlled`, `Medication.schedule`, `TreatmentOption.schedule`,
+and `Prescription.doNotFillBeforeDate` — a field whose textbook use is sequential Schedule II
+prescriptions. Reading the schema, the reasonable conclusion is that Photon handles
+controlled substances.
 
-But the API clearly supports them: `TreatmentOption.schedule`, `Medication.controlled`,
-`Medication.schedule`, and `Prescription.doNotFillBeforeDate` — a field that only exists
-for sequential Schedule II prescriptions. `doNotFillBeforeDate` does appear in the
-Elements docs, three times, all as a bare TypeScript field with no explanation of what
-it's for.
+It doesn't. Photon's Head of Engineering confirmed by email that controlled substances are
+not supported today, and that `doNotFillBeforeDate` is occasionally used for ordinary drugs.
 
-For a mental health or pain clinic evaluating Photon, "can you do stimulants" is the first
-question, and the documentation doesn't answer it. Separately, since the 2023 DEA rule a
-Schedule II e-prescription can only be transferred pharmacist-to-pharmacist, once, at the
-patient's request — which means the patient-reroute flow, Photon's best feature, probably
-can't work the same way there. That's worth saying explicitly either way.
+That gap between what the schema suggests and what the platform does is the finding. I spent
+real time reasoning about C-II workflows off those fields before asking — and asking was the
+only way to find out, because the documentation says nothing either way. Across all 21 pages
+there are zero mentions of EPCS, DEA, "controlled", "Schedule II", PDMP, or identity
+proofing; the word "schedule" does not appear in the prose documentation in any context.
+
+For a psychiatry or pain clinic evaluating Photon, "can you do stimulants" is the first
+question asked, and today the honest answer is only reachable by emailing someone. One line
+in the getting-started guide would save every one of those conversations.
+
+Worth noting for whenever it is built: since the DEA's 2023 rule, an unfilled Schedule II
+e-prescription can be transferred between pharmacies only once, at the patient's request,
+pharmacist-to-pharmacist. Photon's best feature — the patient rerouting their own order —
+cannot work the same way there, and that constraint is worth designing around early rather
+than discovering late.
 
 ---
 
