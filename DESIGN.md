@@ -1,37 +1,73 @@
 # Dana's Dashboard — design
 
-What this is, what each feature does, and where the line sits between what the software
-decides and what a person decides.
+## In one sentence
+
+**The clinic finds out a patient is in trouble before the patient does.**
 
 ---
 
 ## The problem
 
-A small allergy and dermatology clinic has one coordinator and three prescribers. Nobody
-knows a patient has run out of medication — or is carrying an expired EpiPen — until the
-patient calls.
+Every prescription has a date it stops working: the day it was filled plus its days supply.
+Photon knows both numbers. Nothing multiplies them.
 
-Every prescription has a date it stops working: the day it was filled plus its days
-supply. Photon knows both numbers. Nothing multiplies them.
-
-So the clinic is reactive. Every task arrives as a complaint, days after the failure, from
-the person least able to fix it.
+So nobody at the clinic knows a patient has run out — or is carrying an expired EpiPen —
+until the patient calls. Every task arrives as a complaint, days after the failure, from the
+person least able to fix it. **The patient is the clinic's error-handling mechanism.**
 
 ---
 
-## The shape
+## The value, concretely
 
-Three steps, and only one of them uses a model.
+One patient, one prescription:
+
+| | Today | With this |
+|---|---|---|
+| Sep 3 | Renata's antihistamine is sent | same |
+| Sep 13 | — | *ready 10 days, never collected* → Dana moves it to a pharmacy near her office, in one click |
+| Sep 14 | — | Renata gets a text. She has her medication |
+| Sep 24 | Renata calls, out of medication, upset | nothing happened |
+| Sep 24 | Dana: 25 minutes on hold | Dana: 20 seconds, ten days earlier |
+
+Three people get something different out of it:
+
+| | What changes |
+|---|---|
+| **Dana** | Her morning is four things to approve, not six complaints to chase. She acts ten days early instead of ten days late |
+| **A prescriber** | One batched signature queue instead of interruptions, and each one arrives with the chart already read |
+| **The patient** | Finds out from the clinic, with a fix attached — not from an empty bottle |
+
+**The number that says whether it works:** what fraction of problems never reach a
+physician. Today's panel reads 67%. A version of this that escalates everything would score
+badly on that, which is the correct behaviour for that metric.
+
+---
+
+## What this deliberately is not
+
+Narrowness is the design. This product watches exactly one thing: **whether the medicine
+actually arrives, and keeps arriving.**
+
+- Not an EHR, and not a replacement for one
+- Not a scribe — it is not in the room, and the prescribing moment already works fine
+- Not prior-auth automation — it notices a PA is blocking something and stops there
+- Not a patient app — everything goes out as the clinic, approved by a person
+- Not a chat box. A chat box requires you to already know what to ask; the whole problem is
+  that nobody knew
+
+Photon solved getting a prescription *sent*. This solves noticing when it did not *land*.
+
+---
+
+## How it works
+
+Three steps. Only one of them uses a model.
 
 | | What it does | How |
 |---|---|---|
 | **Notice** | Compute who is about to fail | Rules. No AI |
 | **Sort** | Put each problem in front of whoever can actually clear it | Rules. No AI |
 | **Prepare** | Read the messy parts and take a position | A model |
-
-The number that matters: **what fraction of problems never reach a physician.** Today it
-reads 67%. A version of this that escalates everything would score badly on that, which is
-the correct behaviour for that metric.
 
 ---
 
