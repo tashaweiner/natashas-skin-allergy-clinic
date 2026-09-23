@@ -318,7 +318,14 @@ async function allPatients(): Promise<PhotonPatient[]> {
   throw new Error("patient pagination did not terminate");
 }
 
-export async function getFlags(today = new Date()): Promise<Flag[]> {
+export type Panel = {
+  flags: Flag[];
+  /** How many patients were looked at. The denominator matters: "6 need
+   *  something" means nothing without "out of 19". */
+  patientsChecked: number;
+};
+
+export async function getFlags(today = new Date()): Promise<Panel> {
   const overlay = await loadOverlay();
   const data = { patients: await allPatients() };
 
@@ -463,7 +470,7 @@ export async function getFlags(today = new Date()): Promise<Flag[]> {
     }
   }
 
-  return flags
+  const out = flags
     .map((f) => {
       const queue = queueFor(f.kind, f.renewableWithoutVisit, f.waitingOn);
       return {
@@ -476,4 +483,6 @@ export async function getFlags(today = new Date()): Promise<Flag[]> {
       };
     })
     .sort((a, b) => a.urgency - b.urgency || a.daysUntil - b.daysUntil);
+
+  return { flags: out, patientsChecked: data.patients.length };
 }

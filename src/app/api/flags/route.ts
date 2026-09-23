@@ -5,8 +5,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const flags = await getFlags();
-    return NextResponse.json({ flags });
+    const panel = await getFlags();
+    return NextResponse.json(panel);
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : String(e) },

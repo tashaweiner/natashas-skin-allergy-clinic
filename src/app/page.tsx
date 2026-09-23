@@ -232,10 +232,11 @@ function Column({
 
 export default async function Page() {
   let flags: Flag[] = [];
+  let patientsChecked = 0;
   let error: string | null = null;
 
   try {
-    flags = await getFlags();
+    ({ flags, patientsChecked } = await getFlags());
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   }
@@ -270,7 +271,9 @@ export default async function Page() {
           Catching patients before they run out of medication.
         </p>
         <p className="mt-3 text-sm text-slate-500">
-          {today} — <span className="font-medium text-slate-900">{flags.length} need something</span>
+          {today} — <span className="font-medium text-slate-900">{patientsChecked} patients checked</span>
+          {", "}
+          <span className="font-medium text-slate-900">{flags.length} need something</span>
           {physician.length > 0 && (
             <>
               , and{" "}
