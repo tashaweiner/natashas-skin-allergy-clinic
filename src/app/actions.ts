@@ -95,7 +95,7 @@ export async function prepareRenewal(
   prescriptionId: string,
   patientId: string,
   computedRefills?: number
-): Promise<{ ok: boolean; url?: string; error?: string }> {
+): Promise<{ ok: boolean; url?: string; prefilled?: boolean; error?: string }> {
   try {
     const { prescription: rx } = await gql<{
       prescription: {
@@ -130,7 +130,7 @@ export async function prepareRenewal(
          createPrescriptionTemplate(
            catalogId: $catalogId, treatmentId: $treatmentId, name: $name,
            dispenseQuantity: $q, dispenseUnit: $u, fillsAllowed: $fills,
-           daysSupply: $days, instructions: $sig, isPrivate: true
+           daysSupply: $days, instructions: $sig, isPrivate: false
          ) { id }
        }`,
       {
@@ -148,10 +148,19 @@ export async function prepareRenewal(
 
     return {
       ok: true,
+      prefilled: true,
       url: `https://app.neutron.health/prescriptions/new?patientId=${patientId}&templateIds=${tpl.id}`,
     };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    // Prefilling is an enhancement, not a dependency. If the template can't be
+    // created, the physician still needs to reach the prescribe form — a blank
+    // form beats a dead button.
+    console.error("prefill failed, falling back to a plain deep link:", e);
+    return {
+      ok: true,
+      prefilled: false,
+      url: `https://app.neutron.health/prescriptions/new?patientId=${patientId}`,
+    };
   }
 }
 
