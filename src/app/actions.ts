@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { gql } from "@/lib/photon.ts";
+import { buildSituation } from "@/lib/prompts.ts";
 
 /**
  * Pharmacies the clinic can route to. Photon's search is by lat/long, so this
@@ -215,18 +216,7 @@ export async function draftPatientMessage(input: {
   renewableWithoutVisit: boolean;
   pharmacyName?: string;
 }): Promise<DraftedMessage> {
-  const situation = [
-    `Medication: ${input.medication}`,
-    `Situation: ${input.reason}`,
-    `Refills they can still collect: ${input.refillsLeft}`,
-    `Visit already scheduled: ${input.nextAppointment ?? "none"}`,
-    `Can be renewed without a visit: ${input.renewableWithoutVisit ? "yes" : "no"}`,
-    input.pharmacyName ? `Currently at: ${input.pharmacyName}` : null,
-    `The clinic can move the prescription to another pharmacy on their behalf if they name one.`,
-    `The clinic cannot link them into an app — replies come back to the clinic by text.`,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const situation = buildSituation(input);
 
   const withName = (m: DraftedMessage): DraftedMessage => ({
     ...m,

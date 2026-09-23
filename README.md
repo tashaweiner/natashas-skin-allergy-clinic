@@ -30,6 +30,7 @@ token is refused `write:prescription` (see below). The prompt is in
 ```bash
 npm run seed                         # builds the local overlay from what's in Photon
 npm run dev                          # http://localhost:3000
+npm run audit                        # asserts no patient identifier reaches Claude
 ```
 
 `ANTHROPIC_API_KEY` is optional. Without it the recommendation layer falls back to a

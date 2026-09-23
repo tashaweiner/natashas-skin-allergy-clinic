@@ -13,6 +13,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import type { Flag } from "./panel.ts";
+import { buildChart } from "./prompts.ts";
 
 export type Verdict = "APPROVE" | "NEEDS_VISIT" | "HOLD";
 
@@ -109,33 +110,8 @@ export async function recommend(flag: Flag): Promise<Recommendation> {
   }
 
   const client = new Anthropic();
+  const chart = buildChart(flag);
 
-  // The model is given no name and no identifier. It reasons about a chart, not
-  // a person, so nothing that leaves this process identifies the patient.
-  const chart = [
-    `Medication: ${flag.medication}`,
-    `Why this surfaced: ${flag.reason}`,
-    `Refills the patient can still collect: ${flag.refillsLeft}`,
-    `Prescriber marked renewable without a visit: ${flag.renewableWithoutVisit ? "yes" : "no"}`,
-    `Next scheduled visit: ${flag.nextAppointment ?? "none"}`,
-    flag.sig ? `Directions as written: ${flag.sig}` : null,
-    flag.allergies?.length
-      ? `Allergies on file: ${flag.allergies.join(", ")}`
-      : flag.allergyStatus
-        ? `Allergies on file: none — recorded status is "${flag.allergyStatus}"`
-        : "Allergies on file: none, and no allergy status was ever recorded — absence here means nobody asked, not that there are none",
-    flag.medicationHistory?.length
-      ? `Other medications on file: ${flag.medicationHistory.join(", ")}`
-      : "Other medications on file: none recorded",
-    // Photon screens at write time via prescriptionScreen; this tool does not
-    // re-run it, so the model is told that rather than handed a result we never
-    // fetched. Wiring it is BACKLOG item 2.
-    "Interaction screening: NOT re-run for this renewal. The last screen was at the time the original prescription was written.",
-    flag.coverageMessage ? `Insurer returned: "${flag.coverageMessage}"` : null,
-    flag.lastSeen ? `Last seen: ${flag.lastSeen}` : "Last seen: not recorded",
-  ]
-    .filter(Boolean)
-    .join("\n");
 
   try {
     const res = await client.messages.create({

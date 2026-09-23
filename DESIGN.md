@@ -52,6 +52,15 @@ it's carried into the form. The quantity suggestion is a question, so it deliber
 Two calls, both on language. Everything numeric is rules: auditable, testable, and unable to
 invent a date.
 
+**No patient identifier reaches the model.** Both prompts live in `src/lib/prompts.ts`, and
+`npm run audit` builds the real strings and checks them against every name, date of birth,
+phone, email, address, and Photon id in the live panel. It currently checks 12 prompts
+against 128 identifiers across 19 patients and finds nothing.
+
+The patient message is the interesting case: the model writes the literal token `{{name}}`
+and the app substitutes afterwards. A draft that loses the token is rejected rather than
+patched — a message addressed to the wrong person is worse than no message.
+
 ---
 
 ## The safety boundary
