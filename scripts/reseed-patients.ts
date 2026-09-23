@@ -12,10 +12,11 @@
 import { gql, tryGql } from "../src/lib/photon.ts";
 
 /**
- * Every demo patient carries the same number — the clinic's own phone during a
- * demo — so the `tel:` links dial something real instead of a 555 placeholder.
+ * Every demo patient carries the same number, so the `tel:` links dial something
+ * real during a demo instead of a 555 placeholder. Set DEMO_PHONE in .env.local;
+ * the fallback is a reserved fictional number.
  */
-const DEMO_PHONE = "+13052403648";
+const DEMO_PHONE = process.env.DEMO_PHONE ?? "+12125550100";
 
 const PATIENTS = [
   {
