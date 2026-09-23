@@ -42,6 +42,27 @@ function danaAction(f: Flag): string {
   }
 }
 
+/**
+ * What the text is for. The drafted message adapts to the situation, but the
+ * button should say which conversation Dana is starting.
+ */
+function textLabel(f: Flag): string {
+  switch (f.kind) {
+    case "STRANDED":
+      return "Text them about the pharmacy";
+    case "BLOCKED":
+      return "Text them an update";
+    case "SHORT_SUPPLY":
+      return "Text them to call the clinic";
+    case "DEVICE_EXPIRING":
+      return "Text them about the expiry";
+    case "RUNNING_OUT":
+      return f.renewableWithoutVisit
+        ? "Text them about the renewal"
+        : "Text them to book a visit";
+  }
+}
+
 function Contact({ f, label }: { f: Flag; label?: string }) {
   return (
     <ContactPanel
@@ -103,17 +124,10 @@ function DanaCard({ f, pharmacies }: { f: Flag; pharmacies: PharmacyOption[] }) 
       {canReroute ? (
         <>
           <RerouteButton orderId={f.orderId!} options={pharmacies} />
-          <Contact f={f} />
+          <Contact f={f} label={textLabel(f)} />
         </>
       ) : (
-        <Contact
-          f={f}
-          label={
-            f.kind === "SHORT_SUPPLY"
-              ? "Text them to call the clinic"
-              : "Text them to book a visit"
-          }
-        />
+        <Contact f={f} label={textLabel(f)} />
       )}
     </Card>
   );
@@ -130,7 +144,7 @@ function WaitingCard({ f }: { f: Flag }) {
       {f.coverageMessage ? (
         <p className="mt-2 text-xs italic text-slate-500">“{f.coverageMessage}”</p>
       ) : null}
-      <Contact f={f} />
+      <Contact f={f} label={textLabel(f)} />
     </Card>
   );
 }
@@ -196,7 +210,7 @@ async function PhysicianCard({ f }: { f: Flag }) {
             : undefined
         }
       />
-      <Contact f={f} />
+      <Contact f={f} label={textLabel(f)} />
     </Card>
   );
 }
