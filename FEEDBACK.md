@@ -197,3 +197,29 @@ implementation — mutate, re-read, show the user — is wrong twice over.
 later, as `INVALID_ORDER: Patient does not have an address on file`, at the point of
 routing. The error message is excellent — it's the timing that's awkward. Either require
 it at creation, or note it in the sync-patients guide.
+
+### 19. There is no patient-facing link anywhere in the API
+
+Photon texts patients a `sl.neutron.health/…` link where they choose a pharmacy, compare
+prices, and track the order. That link is the best thing about the product from a patient's
+side — I watched it quote $40.31 against a $289.24 retail price.
+
+The API exposes no way to get it. I searched every type in the schema for a url, link, or
+token field: the only hits are `Invite.url`, `WebhookConfig.url`, `Client.whiteListedUrls`
+and `Verification.verifyUrl`. Nothing on `Order` or `Fill`.
+
+So a clinic reaching out to a patient about their own prescription cannot send them to their
+own order. Every message has to route the reply back through the clinic instead, which is
+more work for the staff and a worse experience for the patient than the thing Photon already
+built.
+
+### 20. `createPrescriptionTemplate` is allowed where `createPrescription` is not
+
+Noting this as a compliment. A machine token can pre-draft a prescription as a template and
+the prescribe deep link accepts `templateIds` — so an integrator can hand a physician a
+filled-in form without anything being signed. That is exactly the right line, and it is what
+made the safety story of my product easy.
+
+It is not documented as a prefill path anywhere. It reads as a template-management feature,
+and the deep-link parameter is one row in a table in the integration guide. Worth surfacing —
+it is the cleanest answer to "how do I prepare work for a prescriber without overstepping."
