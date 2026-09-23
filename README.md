@@ -125,7 +125,7 @@ code counts fills still in `NEW` — see the comment in
 `photon:prescription:expired`, fires a year out and means nothing clinically. Every
 ingredient for the date that matters is in the API and nothing assembles it.
 
-Eighteen more in [`FEEDBACK.md`](FEEDBACK.md), including what Photon gets right.
+Five more in [`FEEDBACK.md`](FEEDBACK.md), including what Photon gets right.
 
 ---
 

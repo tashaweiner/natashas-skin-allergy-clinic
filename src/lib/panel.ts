@@ -13,8 +13,8 @@ import { gql } from "./photon.ts";
 import { loadOverlay, daysBetween, type RxOverlay } from "./overlay.ts";
 
 const PANEL_QUERY = `
-  query Panel {
-    patients {
+  query Panel($first: Int!, $after: ID) {
+    patients(first: $first, after: $after) {
       id
       name { full }
       phone
@@ -290,9 +290,37 @@ function buildProposal(
   };
 }
 
+/**
+ * Every patient in the organisation.
+ *
+ * `patients` silently defaults to 10. Nothing in the schema or the docs says
+ * so — you discover it by counting. For a product whose whole promise is that
+ * it watches the entire panel, a quietly truncated list is the worst possible
+ * failure: the patient who was about to run out is simply absent, and the
+ * screen looks just as confident either way. So this pages to exhaustion.
+ */
+const PAGE = 100;
+
+async function allPatients(): Promise<PhotonPatient[]> {
+  const everyone: PhotonPatient[] = [];
+  let after: string | undefined;
+
+  for (let guard = 0; guard < 200; guard++) {
+    const { patients } = await gql<{ patients: PhotonPatient[] }>("api", PANEL_QUERY, {
+      first: PAGE,
+      after,
+    });
+    everyone.push(...patients);
+    if (patients.length < PAGE) return everyone;
+    after = patients[patients.length - 1].id;
+  }
+
+  throw new Error("patient pagination did not terminate");
+}
+
 export async function getFlags(today = new Date()): Promise<Flag[]> {
   const overlay = await loadOverlay();
-  const data = await gql<{ patients: PhotonPatient[] }>("api", PANEL_QUERY);
+  const data = { patients: await allPatients() };
 
   const flags: Omit<Flag, "queue">[] = [];
   const rxById = new Map<string, PhotonRx>();

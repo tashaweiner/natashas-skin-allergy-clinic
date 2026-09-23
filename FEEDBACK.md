@@ -1,6 +1,6 @@
 # Notes for the Photon team
 
-Six things I ran into building this, roughly in the order they cost me time. I'm sure
+Seven things I ran into building this, roughly in the order they cost me time. I'm sure
 there's context I don't have on some of these — flagging them as a first-time integrator,
 not telling you how to run your platform.
 
@@ -59,7 +59,21 @@ So a clinic can't tell a patient "your usual pharmacy has it in stock," or help 
 even though you know both. I'd guess pricing data is contractual and that's the reason — but
 from the clinic's side it's a strange asymmetry.
 
-## 5. The MCP server can write but can't read
+## 5. `patients` silently returns 10 of them
+
+This one actually bit me. I built the dashboard, it looked right, and it was reading ten
+patients out of nineteen. No error, no flag, no `hasMore` — the list just ends and looks
+complete.
+
+`patients` takes `first` and `after`, so pagination is there. It's the default that's the
+problem: for a query like this, a silent cap is indistinguishable from "that's everyone,"
+and I only caught it because I happened to count.
+
+For anything doing population work — adherence, recall, outreach, a safety net of any kind —
+missing a patient is the failure that matters, and this fails in the direction where the
+screen still looks confident. Even a `totalCount` would have told me.
+
+## 6. The MCP server can write but can't read
 
 `rx_intake`, `rx_search`, `rx_draft`, `rx_send` are all write-path. There's no tool to list
 patients, query prescriptions, or look at fills.
@@ -69,7 +83,7 @@ can only do what a human already told it to do. That makes it a very good remote
 and not quite an assistant. Given where the MCP beta seems to be heading, a couple of read
 tools would change what people can build on it.
 
-## 6. The schema looks like it supports controlled substances
+## 7. The schema looks like it supports controlled substances
 
 `Medication.controlled`, `Medication.schedule`, and `Prescription.doNotFillBeforeDate` are
 all there, and `doNotFillBeforeDate` is textbook Schedule II. I spent an afternoon reasoning
