@@ -1,4 +1,9 @@
 /**
+ * Why this file exists: every prescription has a date it stops working — the day
+ * it was filled plus its days supply. Photon stores both numbers and nothing
+ * multiplies them, so no clinic knows a patient has run out until the patient
+ * calls. This computes that date for the whole panel.
+ *
  * The watcher. Reads the panel from Photon, joins the local overlay, and
  * computes flags. No AI in here on purpose — these are rules, and rules are
  * cheaper, auditable, and safer than asking a model to do arithmetic.

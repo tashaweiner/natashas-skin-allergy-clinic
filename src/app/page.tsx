@@ -266,11 +266,20 @@ export default async function Page() {
       <header className="mb-8">
         <p className="text-sm text-slate-500">Natasha&apos;s Allergy &amp; Skin</p>
         <h1 className="mt-1 text-2xl font-semibold text-slate-900">Dana&apos;s Dashboard</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          {today} — {flags.length} {flags.length === 1 ? "problem" : "problems"} found.{" "}
-          <span className="font-medium text-slate-900">
-            {neverReachedADoctor}% never reach a physician.
-          </span>
+        <p className="mt-1 text-sm text-slate-600">
+          Catching patients before they run out of medication.
+        </p>
+        <p className="mt-3 text-sm text-slate-500">
+          {today} — <span className="font-medium text-slate-900">{flags.length} need something</span>
+          {physician.length > 0 && (
+            <>
+              , and{" "}
+              <span className="font-medium text-slate-900">
+                {flags.length - physician.length} of them never reach a doctor
+              </span>
+            </>
+          )}
+          .
         </p>
       </header>
 
