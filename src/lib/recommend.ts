@@ -66,6 +66,34 @@ function deterministic(flag: Flag): Recommendation {
   };
 }
 
+/**
+ * Pulls the first balanced {...} out of a response.
+ *
+ * A greedy regex runs to the last brace in the whole string, which swallows any
+ * trailing prose the model adds after the object and fails to parse.
+ */
+function firstJsonObject(text: string): string | null {
+  const start = text.indexOf("{");
+  if (start === -1) return null;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (escaped) {
+      escaped = false;
+    } else if (c === "\\" && inString) {
+      escaped = true;
+    } else if (c === '"') {
+      inString = !inString;
+    } else if (!inString) {
+      if (c === "{") depth++;
+      else if (c === "}" && --depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+
 const cache = new Map<string, Recommendation>();
 
 export async function recommend(flag: Flag): Promise<Recommendation> {
@@ -81,8 +109,9 @@ export async function recommend(flag: Flag): Promise<Recommendation> {
 
   const client = new Anthropic();
 
+  // The model is given no name and no identifier. It reasons about a chart, not
+  // a person, so nothing that leaves this process identifies the patient.
   const chart = [
-    `Patient: ${flag.patientName}`,
     `Medication: ${flag.medication}`,
     `Why this surfaced: ${flag.reason}`,
     `Refills the patient can still collect: ${flag.refillsLeft}`,
@@ -116,10 +145,9 @@ export async function recommend(flag: Flag): Promise<Recommendation> {
       .map((b) => b.text)
       .join("");
 
-    // The model is asked for bare JSON, but tolerate a fenced block.
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("no JSON in response");
-    const parsed = JSON.parse(match[0]) as Recommendation;
+    const json = firstJsonObject(text);
+    if (!json) throw new Error("no JSON object in response");
+    const parsed = JSON.parse(json) as Recommendation;
 
     if (!["APPROVE", "NEEDS_VISIT", "HOLD"].includes(parsed.verdict)) {
       throw new Error(`unexpected verdict: ${parsed.verdict}`);

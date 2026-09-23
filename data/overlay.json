@@ -1,6 +1,6 @@
 {
   "appointments": {
-    "pat_01M305G0YB3DWRQNHS8ENYDT51": "2026-11-04",
+    "pat_01M305G0YB3DWRQNHS8ENYDT51": null,
     "pat_01M305G0S28N4ABS9QRHBNNS0K": null,
     "pat_01M305G0HTZFRFWGTZHZWB7TDP": "2026-10-11",
     "pat_01M305G0A9X1JQBVZ55DQ43F27": "2026-10-30",
@@ -11,9 +11,10 @@
   },
   "prescriptions": {
     "rx_01M306B88ZE92ADYXC7C7FWZ80": {
-      "filledAt": "2026-09-14",
-      "renewableWithoutVisit": true,
-      "lastSeen": "2026-08-21"
+      "filledAt": "2026-08-29",
+      "renewableWithoutVisit": false,
+      "refillsLeft": 0,
+      "lastSeen": "2025-08-18"
     },
     "rx_01M306B57NEFMXDQPRNGQR178J": {
       "filledAt": "2026-08-26",

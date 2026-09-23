@@ -1,5 +1,8 @@
-import { getFlags, type Flag, type FlagKind, type Queue } from "@/lib/panel.ts";
+import { getFlags, type Change, type Flag, type FlagKind, type Queue } from "@/lib/panel.ts";
 import { recommend, type Recommendation } from "@/lib/recommend.ts";
+import { nearbyPharmacies, type PharmacyOption } from "./actions.ts";
+import { RerouteButton } from "./RerouteButton.tsx";
+import { ContactPanel } from "./ContactPanel.tsx";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +34,24 @@ function danaAction(f: Flag): string {
       return "Offer delivery or another pharmacy";
     case "BLOCKED":
       return "Start the prior authorisation";
+    case "SHORT_SUPPLY":
+      return "Call and ask what happened";
     default:
-      return "Book a visit";
+      return "Book a visit — renewal needs one";
   }
+}
+
+function Contact({ f, label }: { f: Flag; label?: string }) {
+  return (
+    <ContactPanel
+      label={label}
+      name={f.patientName}
+      phone={f.phone}
+      email={f.email}
+      dateOfBirth={f.dateOfBirth}
+      address={f.address}
+    />
+  );
 }
 
 function Card({ children }: { children: React.ReactNode }) {
@@ -55,13 +73,37 @@ function Head({ f }: { f: Flag }) {
   );
 }
 
-function DanaCard({ f }: { f: Flag }) {
+function DanaCard({ f, pharmacies }: { f: Flag; pharmacies: PharmacyOption[] }) {
+  // A stranded order is the one case we can actually resolve from here.
+  const canReroute = f.kind === "STRANDED" && f.orderId && pharmacies.length > 0;
+
   return (
     <Card>
       <Head f={f} />
-      <button className="mt-3 w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white">
-        {danaAction(f)}
-      </button>
+      {f.pharmacyName && (
+        <p className="mt-1 text-xs text-slate-500">Currently at {f.pharmacyName}</p>
+      )}
+      {f.kind === "SHORT_SUPPLY" && (
+        <p className="mt-2 rounded bg-slate-50 px-2 py-1.5 text-xs text-slate-600">
+          Goes to Dr. Reyes once there&apos;s an answer — lost it, worse flare, or a bigger
+          area than the quantity assumed.
+        </p>
+      )}
+      {canReroute ? (
+        <>
+          <RerouteButton orderId={f.orderId!} options={pharmacies} />
+          <Contact f={f} />
+        </>
+      ) : (
+        <Contact
+          f={f}
+          label={
+            f.kind === "SHORT_SUPPLY"
+              ? "Text them to call the clinic"
+              : "Text them to book a visit"
+          }
+        />
+      )}
     </Card>
   );
 }
@@ -77,6 +119,7 @@ function WaitingCard({ f }: { f: Flag }) {
       {f.coverageMessage ? (
         <p className="mt-2 text-xs italic text-slate-500">“{f.coverageMessage}”</p>
       ) : null}
+      <Contact f={f} />
     </Card>
   );
 }
@@ -107,6 +150,30 @@ async function PhysicianCard({ f }: { f: Flag }) {
         )}
       </div>
 
+      {f.proposal && (
+        <div className="mt-3 rounded-md border border-slate-200 p-3">
+          <p className="text-xs font-medium tracking-wide text-slate-500 uppercase">
+            Renewal draft
+          </p>
+          <p className="mt-1 text-xs text-slate-600">
+            Copied from the prescription written {f.proposal.writtenAt}:
+          </p>
+          <p className="mt-1 text-xs text-slate-700">{f.proposal.unchanged}</p>
+
+          {f.proposal.changes.map((c: Change, i: number) => (
+            <div key={i} className="mt-2 rounded bg-amber-50 px-2 py-1.5 ring-1 ring-amber-200">
+              <p className="text-xs font-medium text-amber-900">
+                {c.field}: {c.from} → {c.to}
+                {c.certainty === "suggested" && (
+                  <span className="ml-1 font-normal opacity-70">(suggested)</span>
+                )}
+              </p>
+              <p className="text-xs text-amber-800">{c.reason}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
       <a
         href={prescribeUrl}
         target="_blank"
@@ -115,6 +182,7 @@ async function PhysicianCard({ f }: { f: Flag }) {
       >
         Review and sign in Photon
       </a>
+      <Contact f={f} />
     </Card>
   );
 }
@@ -151,6 +219,13 @@ export default async function Page() {
     flags = await getFlags();
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
+  }
+
+  let pharmacies: PharmacyOption[] = [];
+  try {
+    pharmacies = await nearbyPharmacies();
+  } catch {
+    // A pharmacy list that won't load shouldn't take the whole board down.
   }
 
   const by = (q: Queue) => flags.filter((f) => f.queue === q);
@@ -194,7 +269,7 @@ export default async function Page() {
         <div className="flex flex-col gap-8 lg:flex-row lg:gap-6">
           <Column title="Dana" subtitle="Logistics — no doctor needed" count={dana.length}>
             {dana.map((f) => (
-              <DanaCard key={`${f.prescriptionId}-${f.kind}`} f={f} />
+              <DanaCard key={`${f.prescriptionId}-${f.kind}`} f={f} pharmacies={pharmacies} />
             ))}
           </Column>
 

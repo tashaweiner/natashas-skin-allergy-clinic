@@ -176,3 +176,24 @@ can't work the same way there. That's worth saying explicitly either way.
 - **`rx_intake` fails closed on an ambiguous patient match** rather than guessing.
 - **Handing pharmacy choice to the patient** is the right idea and visibly better than
   what it replaces.
+
+---
+
+*Added while wiring a real write:*
+
+### 17. `routeOrder` returns the order as it was before the change
+
+The mutation succeeds and returns `state: ROUTING`, `pharmacy: null` — the pre-update
+order. Read the order again a moment later and it's `PENDING` with the pharmacy set. A
+client that trusts the mutation response concludes nothing happened.
+
+Related: that follow-up read is eventually consistent. Reading immediately still returns
+the old state; it takes a second or two to settle. Worth documenting, since the obvious
+implementation — mutate, re-read, show the user — is wrong twice over.
+
+### 18. `routeOrder` requires an address, and says so only at route time
+
+`createPatient` accepts a patient with no address quite happily. The failure surfaces much
+later, as `INVALID_ORDER: Patient does not have an address on file`, at the point of
+routing. The error message is excellent — it's the timing that's awkward. Either require
+it at creation, or note it in the sync-patients guide.

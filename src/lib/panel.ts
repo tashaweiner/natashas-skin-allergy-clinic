@@ -13,6 +13,10 @@ const PANEL_QUERY = `
       id
       name { full }
       phone
+      email
+      dateOfBirth
+      address { street1 street2 city state postalCode }
+      orders { id state pharmacy { id name } fills { prescription { id } } }
       allergies { allergen { name } }
       allergyStatus
       medicationHistory { active comment
@@ -46,6 +50,37 @@ export type FlagKind =
 
 export type Queue = "dana" | "waiting" | "physician";
 
+/**
+ * One field that differs from the prescription this renews.
+ *
+ * `computed` means arithmetic — it is either right or it is a bug.
+ * `suggested` means a judgement is involved, so it is shown as a question and
+ * the physician answers it. Nothing here is ever applied automatically.
+ */
+export type Change = {
+  field: string;
+  from: string;
+  to: string;
+  reason: string;
+  certainty: "computed" | "suggested";
+};
+
+/**
+ * A renewal is a COPY of the previous prescription plus a highlighted diff.
+ *
+ * The fields are never generated. A model that paraphrases "apply a thin layer
+ * to affected areas twice daily" into something looser is a dosing change that
+ * reads as plausible — so the sig, the drug, and the unit are copied verbatim,
+ * and only the fields that should change are surfaced, with a reason.
+ */
+export type Proposal = {
+  /** The parts carried over untouched, for the physician to skim. */
+  unchanged: string;
+  changes: Change[];
+  /** When the prescription being renewed was written. */
+  writtenAt: string;
+};
+
 export type Flag = {
   kind: FlagKind;
   /** Which of the three columns this belongs in. */
@@ -53,6 +88,9 @@ export type Flag = {
   patientId: string;
   patientName: string;
   phone: string | null;
+  email?: string | null;
+  dateOfBirth?: string;
+  address?: string | null;
   prescriptionId: string;
   medication: string;
   /** Plain-language reason. Shown to Dana; also fed to the drafter. */
@@ -74,6 +112,12 @@ export type Flag = {
   lastSeen?: string;
   /** Set when the item is parked: "labs", "prior authorisation", "a reply". */
   waitingOn?: string;
+  /** Only built for items reaching a physician. */
+  proposal?: Proposal;
+  /** The live order this prescription sits in, when there is one. */
+  orderId?: string;
+  orderState?: string;
+  pharmacyName?: string;
 };
 
 type PhotonFill = { id: string; state: string; filledAt: string | null; requestedAt: string };
@@ -95,6 +139,23 @@ type PhotonPatient = {
   id: string;
   name: { full: string };
   phone: string | null;
+  email: string | null;
+  dateOfBirth: string;
+  address: {
+    street1: string;
+    street2: string | null;
+    city: string;
+    state: string;
+    postalCode: string;
+  } | null;
+  orders:
+    | {
+        id: string;
+        state: string;
+        pharmacy: { id: string; name: string } | null;
+        fills: { prescription: { id: string } | null }[];
+      }[]
+    | null;
   allergies: { allergen: { name: string } }[] | null;
   allergyStatus: string | null;
   medicationHistory:
@@ -124,8 +185,11 @@ function queueFor(kind: FlagKind, renewableWithoutVisit: boolean, waitingOn?: st
       // Otherwise it's an appointment, which is Dana's to book.
       return renewableWithoutVisit ? "physician" : "dana";
     case "SHORT_SUPPLY":
-      // The quantity may be wrong, which is a prescribing judgement.
-      return "physician";
+      // A tube gone in a third of its days supply has an ordinary explanation —
+      // lost, a worse flare, a larger area than anyone assumed. Finding out is a
+      // phone call. It only reaches a physician WITH the answer attached;
+      // sending it up first makes them ask what Dana could have asked.
+      return "dana";
     case "STRANDED":
     case "BLOCKED":
       // Pure logistics. A patient should never be asked to handle either.
@@ -154,22 +218,101 @@ export function runsOutOn(rx: PhotonRx, ov: RxOverlay | undefined): Date | null 
   return new Date(d.getTime() + rx.daysSupply * 86_400_000);
 }
 
+const fmtDate = (d: string) =>
+  new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+
+/**
+ * How many refills it takes to reach the next visit.
+ *
+ * The habit is 90 days plus one refill, written without checking when the
+ * patient is next seen. When that lands short, they run out and nobody knows.
+ */
+function buildProposal(
+  rx: PhotonRx,
+  kind: FlagKind,
+  nextAppointment: string | null,
+  today: Date
+): Proposal {
+  const ds = rx.daysSupply ?? 30;
+  const changes: Change[] = [];
+
+  if (nextAppointment) {
+    const daysToCover = daysBetween(today, new Date(nextAppointment));
+    const fillsNeeded = Math.max(1, Math.ceil(daysToCover / ds));
+    const refillsNeeded = fillsNeeded - 1;
+    if (refillsNeeded !== rx.fillsAllowed) {
+      const gap = daysToCover - (rx.fillsAllowed + 1) * ds;
+      changes.push({
+        field: "Refills",
+        from: String(rx.fillsAllowed),
+        to: String(refillsNeeded),
+        certainty: "computed",
+        reason:
+          gap > 0
+            ? `Next visit is ${fmtDate(nextAppointment)}. At ${rx.fillsAllowed} refill${
+                rx.fillsAllowed === 1 ? "" : "s"
+              } they run out ${gap} days before it.`
+            : `Next visit is ${fmtDate(nextAppointment)}. ${refillsNeeded} covers it without over-supplying.`,
+      });
+    }
+  } else if (rx.fillsAllowed !== 1) {
+    // Without a visit date there is nothing to size against, so bridge one
+    // cycle and let the booking settle it. A no-op is not worth showing.
+    changes.push({
+      field: "Refills",
+      from: String(rx.fillsAllowed),
+      to: "1",
+      certainty: "suggested",
+      reason: `No visit scheduled. One refill bridges about ${ds * 2} days while one is booked.`,
+    });
+  }
+
+  if (kind === "SHORT_SUPPLY") {
+    changes.push({
+      field: "Quantity",
+      from: `${rx.dispenseQuantity} ${rx.dispenseUnit}`,
+      to: `${rx.dispenseQuantity * 2} ${rx.dispenseUnit}?`,
+      certainty: "suggested",
+      reason: `The last ${rx.dispenseQuantity} ${rx.dispenseUnit} did not last the ${ds} days it was written for. The quantity may be too small — or the flare may need a different plan.`,
+    });
+  }
+
+  return {
+    unchanged: `${rx.treatment.name} · ${rx.dispenseQuantity} ${rx.dispenseUnit} · ${rx.daysSupply ?? "?"} days · "${rx.instructions}"`,
+    changes,
+    writtenAt: fmtDate(rx.writtenAt),
+  };
+}
+
 export async function getFlags(today = new Date()): Promise<Flag[]> {
   const overlay = await loadOverlay();
   const data = await gql<{ patients: PhotonPatient[] }>("api", PANEL_QUERY);
 
   const flags: Omit<Flag, "queue">[] = [];
+  const rxById = new Map<string, PhotonRx>();
 
   for (const patient of data.patients) {
     const nextAppointment = overlay.appointments[patient.id] ?? null;
 
     for (const rx of patient.prescriptions ?? []) {
       const ov = overlay.prescriptions[rx.id];
+      rxById.set(rx.id, rx);
       const refills = ov?.refillsLeft ?? refillsLeft(rx);
       const base = {
         patientId: patient.id,
         patientName: patient.name.full,
         phone: patient.phone,
+        email: patient.email,
+        dateOfBirth: patient.dateOfBirth,
+        address: patient.address
+          ? [
+              patient.address.street1,
+              patient.address.street2,
+              `${patient.address.city}, ${patient.address.state} ${patient.address.postalCode}`,
+            ]
+              .filter(Boolean)
+              .join(", ")
+          : null,
         prescriptionId: rx.id,
         medication: rx.treatment.name,
         refillsLeft: refills,
@@ -187,6 +330,14 @@ export async function getFlags(today = new Date()): Promise<Flag[]> {
         coverageMessage: ov?.coverageMessage,
         lastSeen: ov?.lastSeen,
         waitingOn: ov?.waitingOn,
+        ...(() => {
+          const order = (patient.orders ?? []).find((o) =>
+            o.fills.some((f) => f.prescription?.id === rx.id)
+          );
+          return order
+            ? { orderId: order.id, orderState: order.state, pharmacyName: order.pharmacy?.name }
+            : {};
+        })(),
       };
 
       // 1. A device quietly expiring. Nobody checks these, including the patient.
@@ -270,7 +421,7 @@ export async function getFlags(today = new Date()): Promise<Flag[]> {
             kind: "SHORT_SUPPLY",
             daysUntil: 0,
             urgency: 4,
-            reason: `Prescribed for ${rx.daysSupply} days but refilled after ${gap}. The quantity may be too small.`,
+            reason: `Prescribed for ${rx.daysSupply} days but refilled after ${gap}. Worth asking why before anyone changes the quantity.`,
           });
         }
       }
@@ -278,9 +429,16 @@ export async function getFlags(today = new Date()): Promise<Flag[]> {
   }
 
   return flags
-    .map((f) => ({
-      ...f,
-      queue: queueFor(f.kind, f.renewableWithoutVisit, f.waitingOn),
-    }))
+    .map((f) => {
+      const queue = queueFor(f.kind, f.renewableWithoutVisit, f.waitingOn);
+      return {
+        ...f,
+        queue,
+        proposal:
+          queue === "physician"
+            ? buildProposal(rxById.get(f.prescriptionId)!, f.kind, f.nextAppointment, today)
+            : undefined,
+      };
+    })
     .sort((a, b) => a.urgency - b.urgency || a.daysUntil - b.daysUntil);
 }

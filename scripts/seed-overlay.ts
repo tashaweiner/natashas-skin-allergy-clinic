@@ -77,6 +77,17 @@ const SCENARIOS: Scenario[] = [
     }),
   },
   {
+    match: /flonase|fluticasone|mometasone/i,
+    label: "running out · renewal needs a visit first → Dana books",
+    appointmentInDays: null,
+    rx: (ds) => ({
+      filledAt: iso(addDays(today, -(ds - 8))),
+      renewableWithoutVisit: false,
+      refillsLeft: 0,
+      lastSeen: iso(addDays(today, -398)),
+    }),
+  },
+  {
     match: /dupixent|dupilumab/i,
     label: "prior auth submitted, awaiting a decision → Waiting",
     appointmentInDays: 21,
