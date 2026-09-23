@@ -176,40 +176,57 @@ Replies would come back to the clinic, not into Photon: **Photon exposes no
 patient-facing link** for an order anywhere in its API, so there is nothing to send someone
 to. `MOVE` maps onto `routeOrder`, which the app can already do.
 
-### 8. Going out of office — *not built, and the first thing I'd add*
+### 8. Vacation coverage — *not built, and the first thing I'd add*
 
-Whoever holds a clinic's coordination work is a single point of failure. When Dana takes
-four days off, nobody knows what will quietly fail while she is gone — and the failures are
-invisible by construction, because the whole premise of this product is that they are
-already invisible.
+Before a clinician goes on leave, the assistant lists every patient who will need a refill
+or a dose change while they are away, drafts each prescription, and hands the covering
+physician a prepared queue instead of a surprise.
 
-The shape seems obvious: pick your dates, see what falls due in that window, hand each item
-to someone who is in, and push anything needing a signature up before you go.
+Today that transfer happens by memory, or not at all. A patient whose supply ends on the
+Thursday of someone's holiday is invisible to everyone: their own doctor is gone, and the
+covering doctor has no idea they exist until the pharmacy calls.
 
-**I did not build it, because I do not yet understand the problem well enough.** A clinic
-of this size has one coordinator and three prescribers. If Dana is away there is no second
-coordinator to hand her queue to — the only people left are the physicians, and pushing
-front-office work onto them inverts the entire point of the product. So the obvious design
-is wrong for the clinic it was designed for.
+**This is the two things already built, composed.** The runway calculation already knows who
+runs out and when — filter it to the leave window instead of the next ten days. The renewal
+prefill already turns a prescription into a Photon template — run it over the list. The
+covering physician opens a queue where every item is drafted, with the same recommendation
+and the same copied-forward sig.
 
-What I would need to find out first:
+| Input | Already have it |
+|---|---|
+| Who runs out between the 12th and the 20th | The runway computation |
+| What to write for each | The renewal draft — copy, plus computed changes |
+| Whether it can go without a visit | The renewal policy flag |
+| Whether it looks safe to sign | The recommendation |
 
-- When the front office is short-staffed, what actually happens today? Does the work wait,
-  get triaged, or get absorbed by clinical staff?
-- Is coverage a real role in small practices, or does a queue simply hold?
-- Does this differ between a three-person practice and a thirty-person one? A design that
-  assumes a colleague to hand off to only works above some size.
-- What does a physician genuinely want to be handed while the coordinator is away, and what
-  would they consider someone else's job?
+What it adds is a **date window** and a **second reader**.
 
-That is interview work, not engineering work, and guessing at it would produce a feature
-that demos well and nobody uses.
+*The coordinator version is harder, and I would not start there.* When Dana takes leave
+there is nobody to hand her queue to — this clinic has one coordinator and three
+prescribers, and pushing front-office work onto physicians inverts the point of the product.
+Before designing that I would want to know what short-staffed front offices actually do
+today, whether coverage is a real role in a three-person practice, and how differently a
+thirty-person practice behaves. That is interview work, not engineering work.
 
-What I am confident about is the underlying need: **it is hard to know what will go unnoticed
-while you are gone.** That is true of the coordinator and equally true of a physician. It is
-the same problem this product already solves for patients, pointed at staff instead.
+The clinician version has none of those unknowns. It is the one to build.
 
-### 9. Forward to the front office — *not built*
+### 9. Create a ticket by hand — *not built*
+
+Everything on the board today is computed. But a patient calls and says something the data
+cannot know — *"I'm moving to Denver next month"*, *"the cream is burning"*, *"I lost the
+EpiPen"* — and right now there is nowhere to put that.
+
+Both Dana and a prescriber should be able to open an item by hand: pick the patient, write
+what happened, choose whether it needs a signature. It then lives in the same three queues
+as everything else.
+
+This is what stops the product being a read-only report. It also closes the loop on inbound
+replies later: a text back from a patient becomes exactly this kind of item.
+
+Small to build, and it needs the same missing piece as the two below — items have no owner,
+no author, and no manual state.
+
+### 10. Forward to the front office — *not built*
 
 A prescriber looking at a signature request should be able to push it back down: *this needs
 a conversation before I sign*. Dana would not have the same button, because the flow runs one
@@ -258,7 +275,8 @@ auditable, cheap, testable, and cannot invent a date.
 
 | | Blocked on |
 |---|---|
-| Handover before time off | Research first — see feature 8. Then a user model |
+| Creating an item by hand | A user model and a writable item store — everything is computed today |
+| Vacation coverage | Nothing structural — a date window over what already exists. See feature 8 |
 | Assigning and forwarding work | A user model — items have no owner today, so there is nothing to reassign |
 | Sending the patient message | An SMS provider; Photon texts only for pharmacy selection |
 | Reading patient replies | The same, plus a webhook |

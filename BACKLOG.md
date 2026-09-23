@@ -40,28 +40,53 @@ explicitly rather than implying a clean screen it never ran. Wiring it means dra
 renewal against `clinical-api` (the query takes `draftedPrescriptions` + `patientId`), which
 is the right shape but a second domain and a second call per flag.
 
-## 3. Real inbound replies
+## 3. Vacation coverage for a clinician
+
+Before a prescriber goes on leave, list every patient who needs a refill or dose change
+during the window, draft each prescription, and hand the covering physician a prepared queue.
+
+This is the runway calculation and the renewal prefill composed — filter one to a date range,
+run the other over the result. No new machinery, and it removes a failure that is invisible
+by construction: a patient whose supply ends mid-absence is unknown to their own doctor, who
+is away, and to the covering doctor, who has never heard of them.
+
+The coordinator version of this is harder and I would not start there — see `DESIGN.md`
+feature 8.
+
+## 4. Let people create an item by hand
+
+Everything on the board is computed from Photon. But patients say things the data cannot
+know — *"I'm moving to Denver"*, *"the cream is burning"*, *"I lost my EpiPen"* — and there
+is nowhere to put that today.
+
+Dana and the prescribers should both be able to open an item: pick the patient, write what
+happened, mark whether it needs a signature. It joins the same three queues.
+
+This is what stops it being a read-only report, and it is the landing place for inbound
+replies once those exist.
+
+## 5. Real inbound replies
 
 Right now outreach is one-directional. Patients answer in sentences — *"the pharmacy said
 they never got it"*, *"I moved to Denver"*, *"it's $340, I can't do that"* — and each of
 those maps to a Photon operation (`routeOrder`, `updatePatient`, read `Coverage` and offer
 an alternative). Needs an SMS provider; Photon only texts for pharmacy selection.
 
-## 4. Infer supply when `daysSupply` is missing
+## 6. Infer supply when `daysSupply` is missing
 
 `Prescription.daysSupply` is nullable, and for a topical it's close to meaningless anyway.
 Working out how long a 30 g tube lasts means reading the sig — *"apply a thin layer to
 affected areas twice daily"* — against the quantity and the body area. A rule can't do it;
 a model can estimate it and say how confident it is.
 
-## 5. Embed Photon instead of deep-linking
+## 7. Embed Photon instead of deep-linking
 
 Today the sign button opens `app.neutron.health`. In production it's
 `<photon-prescribe-workflow>` inside the clinic's own app — same flow, no context switch,
 and the physician still signs inside Photon's authorized component. Deliberately skipped:
 the auth plumbing wasn't where the risk or the interesting part was.
 
-## 6. Replace the local overlay
+## 8. Replace the local overlay
 
 Everything in `data/overlay.json` exists because Photon can't express it. Most of it
 should come from Photon or the EHR:

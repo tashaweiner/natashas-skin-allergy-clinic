@@ -9,6 +9,9 @@ displayed nowhere, alerted on by nothing, and owned by no one.
 
 Photon has every fact needed to compute it and never does.
 
+**[`DESIGN.md`](DESIGN.md)** — what each feature does, what is and isn't built, and where the
+line sits between what the software decides and what a person decides. Start there.
+
 ---
 
 ## Run it
